@@ -31,33 +31,44 @@ public class Embedder {
 	public static BufferedImage embedMessage(BufferedImage cover, String msg) {
 		int x = 0, y = 0;
 		int capacity;
-		if(msg.length() > cover.getWidth()* cover.getHeight()/8) capacity = cover.getWidth()* cover.getHeight()/8;
+		if(msg.length() > cover.getWidth()* cover.getHeight()/8) throw new IllegalArgumentException("image is too small to embed this message");
+//		if(msg.length() > cover.getWidth()* cover.getHeight()/8) capacity = cover.getWidth()* cover.getHeight()/8;
 		else capacity = msg.length();
 		for(int i=0; i<capacity; i++) {
 			int character = (int)msg.charAt(i);
 			for(int j= 0; j<8; j++) {
 				int bitToHide = (character & 128)== 0 ? 0 : 1; // or 0x80 or 0b10000000
 				if(bitToHide == 1) {
-					if(x < cover.getWidth()) {
-						cover.setRGB(x, y, cover.getRGB(x, y)|bitToHide);
-						x++;
-					}
-					else {
-						x = 0;
-						y++;
-						cover.setRGB(x, y, cover.getRGB(x, y)|bitToHide);
-					}
+//					if(x < cover.getWidth()) {
+//						cover.setRGB(x, y, cover.getRGB(x, y)|bitToHide);
+//						x++;
+//					}
+//					else {
+//						x = 0;
+//						y++;
+//						cover.setRGB(x, y, cover.getRGB(x, y)|bitToHide);
+//					}
+					if(x >= cover.getWidth()) y++;
+					x = x % cover.getWidth();
+					cover.setRGB(x, y, cover.getRGB(x, y)|bitToHide);
+					System.out.println(x +","+ y + "," + Integer.toBinaryString(cover.getRGB(x, y)));
+					x++;
 				}
 				else {
-					if(x < cover.getWidth()) {
-						cover.setRGB(x, y, cover.getRGB(x, y)&0xFFFFFFFE);
-						x++;
-					}
-					else {
-						x = 0;
-						y++;
-						cover.setRGB(x, y, cover.getRGB(x, y)&0xFFFFFFFE);
-					}
+//					if(x < cover.getWidth()) {
+//						cover.setRGB(x, y, cover.getRGB(x, y)&0xFFFFFFFE);
+//						x++;
+//					}
+//					else {
+//						x = 0;
+//						y++;
+//						cover.setRGB(x, y, cover.getRGB(x, y)&0xFFFFFFFE);
+//					}
+					if(x >= cover.getWidth()) y++;
+					x = x % cover.getWidth();
+					cover.setRGB(x, y, cover.getRGB(x, y)&0xFFFFFFFE);
+					System.out.println(x +","+ y + "," + Integer.toBinaryString(cover.getRGB(x, y)));
+					x++;
 				}
 				character <<= 1;
 			}
@@ -73,8 +84,8 @@ public class Embedder {
 		return cover;
 	}
 	
-	public static BufferedImage embedTextFile(BufferedImage cover, String FileName) throws IOException {
-		return embedMessage(cover, Loader.loadText(FileName));
+	public static BufferedImage embedTextFile(String ImgName, String TextFileName) throws IOException {
+		return embedMessage(Loader.loadImage(ImgName), Loader.loadText(TextFileName));
 	}
 	
 	public static BufferedImage embedImage(BufferedImage cover, BufferedImage msg) {
@@ -151,6 +162,11 @@ public class Embedder {
 		}
 		return cover;
 	}
+	
+	public static BufferedImage embedImageFile(String coverImg, String secretImg) {
+		return embedImage(Loader.loadImage(coverImg), Loader.loadImage(secretImg));
+	}
+	
 	public static void embedBlackPixel(BufferedImage cover, String msg) {
 		int x = 0, y = 0;
 		Color c = new Color(0,0,0);
@@ -196,11 +212,11 @@ public class Embedder {
 	
 	public static void main(String[] args) throws IOException {
 //		System.out.println(Integer.toBinaryString(0xFFFFFFFE));
-//		String msg = "wertz";
-//		int character = (int)msg.charAt(2);
-//		System.out.println(Integer.toBinaryString(character));
-//		System.out.println("result:"+Integer.toBinaryString(((character <<= 1)&128)));
-//		System.out.println(Integer.toBinaryString(character));
+		String msg = "wertz";
+		int character = (int)msg.charAt(2);
+		System.out.println(Integer.toBinaryString(character));
+		System.out.println("result:"+Integer.toBinaryString(((character <<= 1)&128)));
+		System.out.println(Integer.toBinaryString(character));
 //		int copy = character;
 //		for(int j= 0; j<8; j++) {
 //			int bitToHide = (copy & 128)== 0 ? 0 : 1;
@@ -210,6 +226,7 @@ public class Embedder {
 //		Color c = new Color(255,0,0);
 		BufferedImage fourPixel = Loader.loadImage("129481956_153559649792840_2118012743996484739_n.png");
 		BufferedImage none = Loader.loadImage("src/lsbStego/pngkit_pixel-sword-png_2202123.png");
+		BufferedImage ninePixel = Loader.loadImage("3x3White.png");
 		System.out.println(none.getHeight());
 		System.out.println(none.getWidth());
 		BufferedImage cover = Loader.loadImage("src/lsbStego/Screenshot from 2020-11-22 00-15-15.png");
@@ -227,6 +244,7 @@ public class Embedder {
 				+ "carrier, e.g., image, audio, and video files. It comes under the assumption that if the feature is "
 				+ "visible, the point of attack is evident, thus the goal here is always to conceal the very existence"
 				+ " of the embedded data.";
+		String mini = "b";
 		System.out.println(s.length());
 		System.out.println(img.getHeight());
 		System.out.println(img.getWidth());
@@ -243,6 +261,11 @@ public class Embedder {
 		System.out.println(18 *18);
 		System.out.println("----------------------------------------------------");
 //		embedMessage(cover, s);
-		embedImage(cover, none);
+//		embedMessage(fourPixel, "qwert");
+//		BufferedImage stego9Px = embedMessage(ninePixel, mini);
+//		UsefulMethods.compareRGBValues(stego9Px, Loader.loadImage("3x3White.png"));
+		System.out.println("last bit is: " + Integer.toBinaryString((int)s.charAt(4)));
+		System.out.println("last bit is: " + (s.charAt(90) &1));
+//		embedImage(cover, none);
 	}
 }

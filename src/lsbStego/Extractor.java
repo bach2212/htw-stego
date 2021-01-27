@@ -41,15 +41,20 @@ public class Extractor {
 			int character = 0;
 			int lastBit = 0;
 			for(int j= 0; j<8; j++) {
-				if(x < stego.getWidth()) {
-					lastBit = stego.getRGB(x, y) & 1;
-					x++;
-				}
-				else {
-					x = 0;
-					y++;
-					lastBit = stego.getRGB(x, y) & 1;
-				}
+//				if(x < stego.getWidth()) {
+//					lastBit = stego.getRGB(x, y) & 1;
+//					x++;
+//				}
+//				else {
+//					x = 0;
+//					y++;
+//					lastBit = stego.getRGB(x, y) & 1;
+//				}
+				if(x >= stego.getWidth()) y++;
+				x = x % stego.getWidth();
+				lastBit = stego.getRGB(x, y) & 1;
+				x++;
+				
 				if(lastBit == 1) {
 					character <<= 1;
 					character = character | 1;
@@ -62,6 +67,7 @@ public class Extractor {
 	}
 	
 	public static BufferedImage extractImage(BufferedImage stego, int width, int height) {
+		if(width *height <= 0) throw new IllegalArgumentException("Die Breite und die Höhe müssen positive Zahlen sein!");
 		if(width * height > stego.getHeight() * stego.getWidth() / 32) {
 			height = stego.getHeight() * stego.getWidth() / (32 * width);
 			System.out.println("you may not be able to retrieve message without reasonable parameters!");
@@ -112,9 +118,11 @@ public class Extractor {
 //		Color c = new Color(0,0,0);
 //		BufferedImage steg = Loader.loadImage("stego.png");
 //		Loader.showImage(steg);
+		System.out.println(System.currentTimeMillis());
 		BufferedImage imgSteg = Loader.loadImage("imageStego.png");
 //		System.out.println(extractText(steg, 318));
-		BufferedImage extractedImg = extractImage(imgSteg, 171, 341);
+		System.out.println("mess is:"+extractText(Loader.loadImage("stego.png"), 318));
+		BufferedImage extractedImg = extractImage(imgSteg,171, 341);
 //		BufferedImage extractedImg = extractImage(imgSteg, 2, 2);
 //		System.out.println("rgb in integer: " +extractedImg.getRGB(0, 1));
 //		System.out.println("rgb in binary: " + Integer.toBinaryString(extractedImg.getRGB(0, 1)));
